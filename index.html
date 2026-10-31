@@ -1311,7 +1311,7 @@
 <script>
   // ===== CONFIGURE AQUI O ENDPOINT DO FORMSPREE =====
   // Substitua "SEU_ID_AQUI" pelo ID do seu formulário (ex.: https://formspree.io/f/abcdwxyz)
-  const FORMSPREE_ENDPOINT = "https://formspree.io/f/xzeebqke";
+  const FORMSPREE_ENDPOINT = "https://formspree.io/f/SEU_ID_AQUI";
 
   document.addEventListener("DOMContentLoaded", () => {
     const assistantToggle = document.getElementById("assistantToggle");
@@ -1323,7 +1323,7 @@
     const contactForm = document.getElementById("contactForm");
 
     // Se o endpoint estiver configurado, aplica também ao formulário de contato
-    if (contactForm && !FORMSPREE_ENDPOINT.includes("xzeebqke")) {
+    if (contactForm && !FORMSPREE_ENDPOINT.includes("SEU_ID_AQUI")) {
       contactForm.setAttribute("action", FORMSPREE_ENDPOINT);
     }
 
