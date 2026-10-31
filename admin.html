@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel Administrativo - Eng. Leandro Aparecido</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --bg: #020617;
+      --bg-card: #0b1120;
+      --bg-alt: #020617;
+      --accent: #3b82f6;
+      --accent-soft: rgba(59, 130, 246, 0.15);
+      --text-main: #e5e7eb;
+      --text-muted: #9ca3af;
+      --border: #1f2937;
+      --danger: #ef4444;
+      --success: #22c55e;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top, #111827 0, #020617 50%, #020617 100%);
+      color: var(--text-main);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, #60a5fa, #22c55e 70%, #020617);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+      box-shadow: 0 0 16px rgba(37, 99, 235, 0.6);
+    }
+
+    .brand-text-main {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .brand-text-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    nav button {
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      cursor: pointer;
+    }
+
+    nav button.active {
+      background: var(--accent-soft);
+      border-color: rgba(59, 130, 246, 0.4);
+      color: #bfdbfe;
+    }
+
+    main {
+      padding: 16px 0 24px;
+    }
+
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .section-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      font-size: 0.8rem;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+
+    .card-title {
+      font-weight: 500;
+      font-size: 0.85rem;
+    }
+
+    .card-value {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .card-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    form {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 12px;
+      font-size: 0.78rem;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.76rem;
+      margin-bottom: 2px;
+      color: #e5e7eb;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #020617;
+      color: var(--text-main);
+      font-size: 0.78rem;
+      outline: none;
+    }
+
+    input::placeholder, textarea::placeholder {
+      color: rgba(148, 163, 184, 0.7);
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.4);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 0.78rem;
+      border: 1px solid transparent;
+      cursor: pointer;
+      background: var(--accent);
+      color: white;
+      font-weight: 500;
+    }
+
+    .btn:hover {
+      background: #2563eb;
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text-main);
+      border-color: var(--border);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--accent);
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.75rem;
+    }
+
+    thead {
+      background: #020617;
+    }
+
+    th, td {
+      border-bottom: 1px solid #111827;
+      padding: 6px 6px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      font-weight: 500;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(15, 23, 42, 0.6);
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 999px;
+      font-size: 0.68rem;
+    }
+
+    .tag-success {
+      background: rgba(34, 197, 94, 0.15);
+      color: #bbf7d0;
+    }
+
+    .tag-warning {
+      background: rgba(234, 179, 8, 0.15);
+      color: #fef3c7;
+    }
+
+    .tag-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fecaca;
+    }
+
+    .tag-info {
+      background: rgba(59, 130, 246, 0.15);
+      color: #bfdbfe;
+    }
+
+    .notes-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .note-item {
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #111827;
+      background: #020617;
+      font-size: 0.78rem;
+    }
+
+    .note-title {
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .note-date {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .small {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .mt-1 { margin-top: 4px; }
+    .mt-2 { margin-top: 8px; }
+    .mt-3 { margin-top: 12px; }
+
+    @media (max-width: 900px) {
+      .grid-3 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .form-row {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .grid-3 {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .header-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      nav {
+        width: 100%;
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <div class="brand-icon">L</div>
+      <div>
+        <div class="brand-text-main">Painel do Eng. Leandro Aparecido</div>
+        <div class="brand-text-sub">Uso interno • Dados salvos neste navegador</div>
+      </div>
+    </div>
+    <nav>
+      <button data-section="resumo" class="active">Resumo</button>
+      <button data-section="gastos">Gastos</button>
+      <button data-section="ganhos">Ganhos / Serviços</button>
+      <button data-section="agendamentos">Agendamentos</button>
+      <button data-section="avaliacoes">Avaliação de valores</button>
+      <button data-section="notas">Anotações</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+    <!-- RESUMO -->
+    <section id="sec-resumo" class="section active">
+      <h2 class="section-title">Resumo financeiro</h2>
+      <p class="section-sub">
+        Visão rápida de gastos, ganhos e resultado. Os valores são calculados
+        com base nos lançamentos das abas de Gastos e Ganhos.
+      </p>
+
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Ganhos (serviços)</div>
+          </div>
+          <div class="card-value" id="resumo-ganhos">R$ 0,00</div>
+          <div class="card-label">Soma dos serviços com status Aprovado ou Concluído</div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Gastos</div>
+          </div>
+          <div class="card-value" id="resumo-gastos">R$ 0,00</div>
+          <div class="card-label">Soma de todos os lançamentos de gastos</div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Resultado</div>
+          </div>
+          <div class="card-value" id="resumo-resultado">R$ 0,00</div>
+          <div class="card-label">Ganhos - Gastos</div>
+        </div>
+      </div>
+
+      <p class="small mt-2">
+        Observação: estes dados são salvos apenas neste navegador (localStorage).  
+        Se você trocar de computador ou limpar os dados do navegador, o histórico é perdido.
+      </p>
+    </section>
+
+    <!-- GASTOS -->
+    <section id="sec-gastos" class="section">
+      <h2 class="section-title">Controle de gastos</h2>
+      <p class="section-sub">
+        Registre todos os custos relacionados à emissão de laudos (deslocamento, equipamentos,
+        taxas, etc.).
+      </p>
+
+      <form id="form-gasto">
+        <div class="form-row">
+          <div>
+            <label>Data</label>
+            <input type="date" name="data" required>
+          </div>
+          <div>
+            <label>Categoria</label>
+            <input type="text" name="categoria" placeholder="Ex.: Combustível, Equipamentos" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <label>Descrição</label>
+            <input type="text" name="descricao" placeholder="Ex.: Combustível para visita em condomínio X">
+          </div>
+          <div>
+            <label>Valor (R$)</label>
+            <input type="number" step="0.01" name="valor" required>
+          </div>
+        </div>
+        <div>
+          <button type="submit" class="btn">Adicionar gasto</button>
+        </div>
+      </form>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Gastos registrados</div>
+          <div class="card-label" id="gastos-total-label">Total: R$ 0,00</div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+            <tr>
+              <th>Data</th>
+              <th>Categoria</th>
+              <th>Descrição</th>
+              <th>Valor</th>
+            </tr>
+            </thead>
+            <tbody id="tabela-gastos">
+            <tr><td colspan="4" class="small">Nenhum gasto lançado.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- GANHOS -->
+    <section id="sec-ganhos" class="section">
+      <h2 class="section-title">Controle de ganhos / serviços</h2>
+      <p class="section-sub">
+        Registre cada serviço de laudo (orçado, aprovado ou concluído) com valor, cliente e tipo.
+      </p>
+
+      <form id="form-ganho">
+        <div class="form-row">
+          <div>
+            <label>Data do serviço</label>
+            <input type="date" name="data" required>
+          </div>
+          <div>
+            <label>Cliente / Empresa</label>
+            <input type="text" name="cliente" placeholder="Ex.: Condomínio Solar das Torres" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <label>Tipo de laudo</label>
+            <select name="tipo" required>
+              <option value="">Selecione</option>
+              <option>Laudo NR10</option>
+              <option>Laudo NBR 5410</option>
+              <option>Laudo SPDA (NBR 5419)</option>
+              <option>Laudo de aterramento</option>
+              <option>Outro</option>
+            </select>
+          </div>
+          <div>
+            <label>Valor (R$)</label>
+            <input type="number" step="0.01" name="valor" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <label>Status</label>
+            <select name="status" required>
+              <option value="Orçado">Orçado</option>
+              <option value="Aprovado">Aprovado</option>
+              <option value="Concluído">Concluído</option>
+            </select>
+          </div>
+          <div>
+            <label>Observações</label>
+            <input type="text" name="obs" placeholder="Opcional">
+          </div>
+        </div>
+        <div>
+          <button type="submit" class="btn">Adicionar serviço</button>
+        </div>
+      </form>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Serviços registrados</div>
+          <div class="card-label" id="ganhos-total-label">Total (aprovados + concluídos): R$ 0,00</div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+            <tr>
+              <th>Data</th>
+              <th>Cliente</th>
+              <th>Tipo</th>
+              <th>Valor</th>
+              <th>Status</th>
+              <th>Obs.</th>
+            </tr>
+            </thead>
+            <tbody id="tabela-ganhos">
+            <tr><td colspan="6" class="small">Nenhum serviço lançado.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- AGENDAMENTOS -->
+    <section id="sec-agendamentos" class="section">
+      <h2 class="section-title">Calendário de agendamentos</h2>
+      <p class="section-sub">
+        Registre as visitas técnicas e prazos importantes. (Nesta versão básica,
+        o cadastro é manual; integrar automaticamente com o site exigiria um backend.)
+      </p>
+
+      <form id="form-agendamento">
+        <div class="form-row">
+          <div>
+            <label>Data</label>
+            <input type="date" name="data" required>
+          </div>
+          <div>
+            <label>Hora</label>
+            <input type="time" name="hora">
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <label>Cliente / Local</label>
+            <input type="text" name="cliente" placeholder="Ex.: Condomínio X - Torre A" required>
+          </div>
+          <div>
+            <label>Tipo / Laudo</label>
+            <input type="text" name="tipo" placeholder="Ex.: NR10, SPDA, etc." required>
+          </div>
+        </div>
+        <div>
+          <label>Contato / Observações</label>
+          <input type="text" name="contato" placeholder="Nome, telefone, portaria, detalhes de acesso, etc.">
+        </div>
+        <div>
+          <button type="submit" class="btn">Adicionar agendamento</button>
+        </div>
+      </form>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Próximos agendamentos</div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+            <tr>
+              <th>Data</th>
+              <th>Hora</th>
+              <th>Cliente / Local</th>
+              <th>Tipo / Laudo</th>
+              <th>Contato / Obs.</th>
+            </tr>
+            </thead>
+            <tbody id="tabela-agendamentos">
+            <tr><td colspan="5" class="small">Nenhum agendamento cadastrado.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- AVALIAÇÃO DE VALORES -->
+    <section id="sec-avaliacoes" class="section">
+      <h2 class="section-title">Tabela de avaliação / aprovação de valores</h2>
+      <p class="section-sub">
+        Controle propostas enviadas e acompanhe se foram aprovadas, recusadas ou estão em negociação.
+      </p>
+
+      <form id="form-avaliacao">
+        <div class="form-row">
+          <div>
+            <label>Data da proposta</label>
+            <input type="date" name="data" required>
+          </div>
+          <div>
+            <label>Cliente / Empresa</label>
+            <input type="text" name="cliente" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <label>Descrição / Escopo</label>
+            <input type="text" name="descricao" placeholder="Ex.: Laudo NR10 + SPDA - Condomínio Y" required>
+          </div>
+          <div>
+            <label>Valor proposto (R$)</label>
+            <input type="number" step="0.01" name="valor" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <label>Status</label>
+            <select name="status" required>
+              <option>Enviado</option>
+              <option>Aprovado</option>
+              <option>Negociando</option>
+              <option>Recusado</option>
+            </select>
+          </div>
+          <div>
+            <label>Observações</label>
+            <input type="text" name="obs" placeholder="Opcional">
+          </div>
+        </div>
+        <div>
+          <button type="submit" class="btn">Registrar proposta</button>
+        </div>
+      </form>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Propostas</div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+            <tr>
+              <th>Data</th>
+              <th>Cliente</th>
+              <th>Descrição</th>
+              <th>Valor</th>
+              <th>Status</th>
+              <th>Obs.</th>
+            </tr>
+            </thead>
+            <tbody id="tabela-avaliacoes">
+            <tr><td colspan="6" class="small">Nenhuma proposta cadastrada.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- NOTAS -->
+    <section id="sec-notas" class="section">
+      <h2 class="section-title">Área de anotações</h2>
+      <p class="section-sub">
+        Use esta área para registrar observações gerais, pendências, checklist de clientes, etc.
+      </p>
+
+      <form id="form-nota">
+        <div class="form-row">
+          <div>
+            <label>Título</label>
+            <input type="text" name="titulo" placeholder="Ex.: Pendências para condomínio X" required>
+          </div>
+          <div>
+            <label>Data</label>
+            <input type="date" name="data">
+          </div>
+        </div>
+        <div>
+          <label>Conteúdo</label>
+          <textarea name="conteudo" required placeholder="Digite aqui suas anotações..."></textarea>
+        </div>
+        <div>
+          <button type="submit" class="btn">Salvar anotação</button>
+        </div>
+      </form>
+
+      <div class="notes-list" id="lista-notas">
+        <div class="small">Nenhuma anotação ainda.</div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+  // ========= ARMAZENAMENTO LOCAL =========
+  const STORAGE_KEY = "painelLeandroV1";
+
+  let state = {
+    gastos: [],
+    ganhos: [],
+    agendamentos: [],
+    avaliacoes: [],
+    notas: []
+  };
+
+  function carregarEstado() {
+    try {
+      const salvo = localStorage.getItem(STORAGE_KEY);
+      if (salvo) {
+        const obj = JSON.parse(salvo);
+        state = { ...state, ...obj };
+      }
+    } catch (e) {
+      console.error("Erro ao carregar estado:", e);
+    }
+  }
+
+  function salvarEstado() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    atualizarResumo();
+  }
+
+  function formatarMoeda(valor) {
+    if (!valor && valor !== 0) return "R$ 0,00";
+    const num = Number(valor) || 0;
+    return num.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  }
+
+  // ========= RESUMO =========
+  function atualizarResumo() {
+    const ganhosValidos = state.ganhos.filter(
+      g => g.status === "Aprovado" || g.status === "Concluído"
+    );
+    const totalGanhos = ganhosValidos.reduce((s, g) => s + (Number(g.valor) || 0), 0);
+
+    const totalGastos = state.gastos.reduce((s, g) => s + (Number(g.valor) || 0), 0);
+
+    const resultado = totalGanhos - totalGastos;
+
+    document.getElementById("resumo-ganhos").textContent = formatarMoeda(totalGanhos);
+    document.getElementById("resumo-gastos").textContent = formatarMoeda(totalGastos);
+    document.getElementById("resumo-resultado").textContent = formatarMoeda(resultado);
+
+    // labels de totais em gastos e ganhos
+    document.getElementById("gastos-total-label").textContent =
+      "Total: " + formatarMoeda(totalGastos);
+
+    document.getElementById("ganhos-total-label").textContent =
+      "Total (aprovados + concluídos): " + formatarMoeda(totalGanhos);
+  }
+
+  // ========= RENDERIZAÇÃO DE TABELAS =========
+  function renderizarGastos() {
+    const tbody = document.getElementById("tabela-gastos");
+    tbody.innerHTML = "";
+
+    if (!state.gastos.length) {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = 4;
+      td.className = "small";
+      td.textContent = "Nenhum gasto lançado.";
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+      return;
+    }
+
+    // Ordena pela data (mais recente primeiro)
+    const gastosOrdenados = [...state.gastos].sort((a, b) =>
+      (b.data || "").localeCompare(a.data || "")
+    );
+
+    gastosOrdenados.forEach(g => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${g.data || ""}</td>
+        <td>${g.categoria || ""}</td>
+        <td>${g.descricao || ""}</td>
+        <td>${formatarMoeda(g.valor)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderizarGanhos() {
+    const tbody = document.getElementById("tabela-ganhos");
+    tbody.innerHTML = "";
+
+    if (!state.ganhos.length) {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = 6;
+      td.className = "small";
+      td.textContent = "Nenhum serviço lançado.";
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+      return;
+    }
+
+    const ganhosOrdenados = [...state.ganhos].sort((a, b) =>
+      (b.data || "").localeCompare(a.data || "")
+    );
+
+    ganhosOrdenados.forEach(g => {
+      let classe = "tag-info";
+      if (g.status === "Aprovado") classe = "tag-success";
+      if (g.status === "Concluído") classe = "tag-success";
+      if (g.status === "Orçado") classe = "tag-warning";
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${g.data || ""}</td>
+        <td>${g.cliente || ""}</td>
+        <td>${g.tipo || ""}</td>
+        <td>${formatarMoeda(g.valor)}</td>
+        <td><span class="tag ${classe}">${g.status}</span></td>
+        <td>${g.obs || ""}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderizarAgendamentos() {
+    const tbody = document.getElementById("tabela-agendamentos");
+    tbody.innerHTML = "";
+
+    if (!state.agendamentos.length) {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = 5;
+      td.className = "small";
+      td.textContent = "Nenhum agendamento cadastrado.";
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+      return;
+    }
+
+    const agendados = [...state.agendamentos].sort((a, b) => {
+      const dA = (a.data || "") + (a.hora || "");
+      const dB = (b.data || "") + (b.hora || "");
+      return dA.localeCompare(dB);
+    });
+
+    agendados.forEach(a => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${a.data || ""}</td>
+        <td>${a.hora || ""}</td>
+        <td>${a.cliente || ""}</td>
+        <td>${a.tipo || ""}</td>
+        <td>${a.contato || ""}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderizarAvaliacoes() {
+    const tbody = document.getElementById("tabela-avaliacoes");
+    tbody.innerHTML = "";
+
+    if (!state.avaliacoes.length) {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = 6;
+      td.className = "small";
+      td.textContent = "Nenhuma proposta cadastrada.";
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+      return;
+    }
+
+    const avals = [...state.avaliacoes].sort((a, b) =>
+      (b.data || "").localeCompare(a.data || "")
+    );
+
+    avals.forEach(a => {
+      let classe = "tag-info";
+      if (a.status === "Aprovado") classe = "tag-success";
+      if (a.status === "Negociando") classe = "tag-warning";
+      if (a.status === "Recusado") classe = "tag-danger";
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${a.data || ""}</td>
+        <td>${a.cliente || ""}</td>
+        <td>${a.descricao || ""}</td>
+        <td>${formatarMoeda(a.valor)}</td>
+        <td><span class="tag ${classe}">${a.status}</span></td>
+        <td>${a.obs || ""}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderizarNotas() {
+    const lista = document.getElementById("lista-notas");
+    lista.innerHTML = "";
+
+    if (!state.notas.length) {
+      const div = document.createElement("div");
+      div.className = "small";
+      div.textContent = "Nenhuma anotação ainda.";
+      lista.appendChild(div);
+      return;
+    }
+
+    const notasOrdenadas = [...state.notas].sort((a, b) =>
+      (b.data || "").localeCompare(a.data || "")
+    );
+
+    notasOrdenadas.forEach(n => {
+      const div = document.createElement("div");
+      div.className = "note-item";
+      div.innerHTML = `
+        <div class="note-title">${n.titulo || ""}</div>
+        <div class="note-date">${n.data || ""}</div>
+        <div>${(n.conteudo || "").replace(/\n/g, "<br>")}</div>
+      `;
+      lista.appendChild(div);
+    });
+  }
+
+  // ========= TROCA DE ABAS =========
+  function configurarAbas() {
+    const navButtons = document.querySelectorAll("nav button");
+    navButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        navButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        const section = btn.dataset.section;
+        document.querySelectorAll(".section").forEach(sec => {
+          sec.classList.remove("active");
+        });
+        const alvo = document.getElementById("sec-" + section);
+        if (alvo) alvo.classList.add("active");
+      });
+    });
+  }
+
+  // ========= FORMULÁRIOS =========
+  function configurarFormularios() {
+    // Gasto
+    document.getElementById("form-gasto").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const gasto = {
+        id: Date.now(),
+        data: fd.get("data") || "",
+        categoria: fd.get("categoria") || "",
+        descricao: fd.get("descricao") || "",
+        valor: parseFloat(fd.get("valor") || "0")
+      };
+      state.gastos.push(gasto);
+      salvarEstado();
+      renderizarGastos();
+      e.target.reset();
+    });
+
+    // Ganho
+    document.getElementById("form-ganho").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const ganho = {
+        id: Date.now(),
+        data: fd.get("data") || "",
+        cliente: fd.get("cliente") || "",
+        tipo: fd.get("tipo") || "",
+        valor: parseFloat(fd.get("valor") || "0"),
+        status: fd.get("status") || "Orçado",
+        obs: fd.get("obs") || ""
+      };
+      state.ganhos.push(ganho);
+      salvarEstado();
+      renderizarGanhos();
+      e.target.reset();
+    });
+
+    // Agendamento
+    document.getElementById("form-agendamento").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const ag = {
+        id: Date.now(),
+        data: fd.get("data") || "",
+        hora: fd.get("hora") || "",
+        cliente: fd.get("cliente") || "",
+        tipo: fd.get("tipo") || "",
+        contato: fd.get("contato") || ""
+      };
+      state.agendamentos.push(ag);
+      salvarEstado();
+      renderizarAgendamentos();
+      e.target.reset();
+    });
+
+    // Avaliação
+    document.getElementById("form-avaliacao").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const av = {
+        id: Date.now(),
+        data: fd.get("data") || "",
+        cliente: fd.get("cliente") || "",
+        descricao: fd.get("descricao") || "",
+        valor: parseFloat(fd.get("valor") || "0"),
+        status: fd.get("status") || "Enviado",
+        obs: fd.get("obs") || ""
+      };
+      state.avaliacoes.push(av);
+      salvarEstado();
+      renderizarAvaliacoes();
+      e.target.reset();
+    });
+
+    // Notas
+    document.getElementById("form-nota").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const hoje = new Date().toISOString().slice(0, 10);
+      const nota = {
+        id: Date.now(),
+        titulo: fd.get("titulo") || "",
+        data: fd.get("data") || hoje,
+        conteudo: fd.get("conteudo") || ""
+      };
+      state.notas.push(nota);
+      salvarEstado();
+      renderizarNotas();
+      e.target.reset();
+    });
+  }
+
+  // ========= INICIALIZAÇÃO =========
+  document.addEventListener("DOMContentLoaded", () => {
+    carregarEstado();
+    configurarAbas();
+    configurarFormularios();
+
+    renderizarGastos();
+    renderizarGanhos();
+    renderizarAgendamentos();
+    renderizarAvaliacoes();
+    renderizarNotas();
+    atualizarResumo();
+  });
+</script>
+</body>
+</html>
