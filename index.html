@@ -1308,103 +1308,24 @@
   </div>
 </div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
-
-  // === CONFIGURE AQUI O FIREBASE (mesmo config de login/admin) ===
-  const firebaseConfig = {
-    apiKey: "AIzaSyBDUacZA7KSmeSkqQdB9YyUomK2_hX7lUQ",
-    authDomain: "laudos-leandro.firebaseapp.com",
-    projectId: "laudos-leandro",
-    storageBucket: "laudos-leandro.firebasestorage.app",
-    messagingSenderId: "561026492419",
-    appId: "1:561026492419:web:7242bfb9933f5212c1c636"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db  = getFirestore(app);
-
-  const firebaseAtivo = !firebaseConfig.apiKey.includes("AIzaSyBDUacZA7KSmeSkqQdB9YyUomK2_hX7lUQ");
-
-  // === CONFIGURE AQUI O ENDPOINT DO FORMSPREE ===
-  // Exemplo: const FORMSPREE_ENDPOINT = "https://formspree.io/f/abcdwxyz";
-  const FORMSPREE_ENDPOINT = "https://formspree.io/f/xzeebqke";
-
-  // Função para salvar agendamento no Firestore (coleção "agendamentos")
-  async function salvarAgendamentoNoFirestore(origem, dados) {
-    if (!firebaseAtivo) return; // se não colou o config, não tenta
-    try {
-      await addDoc(collection(db, "agendamentos"), {
-        ...dados,
-        origem,
-        criadoEm: new Date().toISOString()
-      });
-    } catch (e) {
-      console.error("Erro ao salvar no Firestore:", e);
-    }
-  }
+<script>
+  // ===== CONFIGURE AQUI O ENDPOINT DO FORMSPREE =====
+  // Substitua "SEU_ID_AQUI" pelo ID do seu formulário (ex.: https://formspree.io/f/abcdwxyz)
+  const FORMSPREE_ENDPOINT = "https://formspree.io/f/SEU_ID_AQUI";
 
   document.addEventListener("DOMContentLoaded", () => {
     const assistantToggle = document.getElementById("assistantToggle");
     const assistantWidget = document.getElementById("assistantWidget");
-    const assistantClose  = document.getElementById("assistantClose");
-    const assistantChat   = document.getElementById("assistantChat");
+    const assistantClose = document.getElementById("assistantClose");
+    const assistantChat = document.getElementById("assistantChat");
     const assistantFooter = document.getElementById("assistantFooter");
     const btnHeroAssistente = document.getElementById("btnHeroAssistente");
-    const contactForm     = document.getElementById("contactForm");
+    const contactForm = document.getElementById("contactForm");
 
-    // === CONTATO: envia para Formspree + grava no Firestore ===
-    if (contactForm) {
-      contactForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const fd = new FormData(contactForm);
-
-        // Monta dados para o Firestore (coleção agendamentos)
-        const hoje = new Date().toISOString().slice(0, 10);
-        const dadosAgendamento = {
-          data: hoje,
-          hora: "",
-          cliente: fd.get("nome") || "",
-          tipo: fd.get("tipo_laudo") || "",
-          contato:
-            `Cidade/UF: ${fd.get("cidade") || ""} | ` +
-            `Prazo: ${fd.get("prazo") || ""} | ` +
-            `E-mail: ${fd.get("email") || ""} | ` +
-            `Telefone: ${fd.get("telefone") || ""} | ` +
-            `Detalhes: ${fd.get("mensagem") || ""}`
-        };
-
-        // Salva na nuvem (aparece no painel em "Agendamentos")
-        salvarAgendamentoNoFirestore("site", dadosAgendamento);
-
-        // Envia e-mail via Formspree
-        if (FORMSPREE_ENDPOINT.includes("SEU_ID_AQUI")) {
-          alert("Solicitação registrada, mas o envio de e-mail (Formspree) ainda não está configurado.");
-          contactForm.reset();
-          return;
-        }
-
-        try {
-          const resp = await fetch(FORMSPREE_ENDPOINT, {
-            method: "POST",
-            body: fd,
-            headers: { "Accept": "application/json" }
-          });
-          if (resp.ok) {
-            alert("Solicitação enviada com sucesso. Em breve você receberá retorno.");
-            contactForm.reset();
-          } else {
-            alert("Não foi possível enviar por e-mail agora. Tente novamente ou utilize o WhatsApp.");
-          }
-        } catch (err) {
-          console.error(err);
-          alert("Erro de conexão ao enviar. Tente novamente mais tarde.");
-        }
-      });
+    // Se o endpoint estiver configurado, aplica também ao formulário de contato
+    if (contactForm && !FORMSPREE_ENDPOINT.includes("SEU_ID_AQUI")) {
+      contactForm.setAttribute("action", FORMSPREE_ENDPOINT);
     }
-
-    // === ASSISTENTE (chat guiado) – igual antes, mas agora também grava no Firestore ===
 
     const steps = [
       {
@@ -1620,31 +1541,15 @@
       }
     }
 
-    async function finishConversation() {
-      const resumo = steps.map(s => {
+    function finishConversation() {
+      // Monta um resumo para você receber
+      const resumo = Object.values(steps).map(s => {
         const val = answers[s.key] || "";
         return `${s.label}: ${val}`;
-      }).join("\n");
-
-      // Salva também no Firestore (coleção agendamentos)
-      const hoje = new Date().toISOString().slice(0, 10);
-      const dadosAgendamento = {
-        data: hoje,
-        hora: "",
-        cliente: answers.nome || "",
-        tipo: answers.tipo_laudo || "",
-        contato:
-          `Tipo de cliente: ${answers.tipo_cliente || ""} | ` +
-          `Cidade/UF: ${answers.cidade || ""} | ` +
-          `Prazo: ${answers.prazo || ""} | ` +
-          `E-mail: ${answers.email || ""} | ` +
-          `Telefone: ${answers.telefone || ""}`
-      };
-
-      salvarAgendamentoNoFirestore("assistente", dadosAgendamento);
+      }).join("\\n");
 
       if (FORMSPREE_ENDPOINT.includes("SEU_ID_AQUI")) {
-        addAssistantMessage("Recebi suas informações, mas o envio por e-mail ainda não está configurado. Por favor, finalize entrando em contato pelos dados na seção de Contato.");
+        addAssistantMessage("Recebi suas informações, mas o envio automático ainda não está configurado. Por favor, finalize entrando em contato pelos dados na seção de Contato.");
         showStatus("Configuração pendente de envio automático.");
         return;
       }
@@ -1658,24 +1563,23 @@
         formData.append(step.label, answers[step.key] || "");
       }
 
-      try {
-        const resp = await fetch(FORMSPREE_ENDPOINT, {
-          method: "POST",
-          body: formData,
-          headers: { "Accept": "application/json" }
-        });
-        if (resp.ok) {
-          addAssistantMessage("Perfeito, seus dados foram enviados ao Eng. Leandro. Você receberá retorno em breve no e‑mail ou WhatsApp informados.");
-          showStatus("Dados enviados com sucesso.");
-        } else {
-          addAssistantMessage("Não consegui enviar por e-mail agora. Por favor, use o formulário de contato ou o WhatsApp informados no site.");
+      fetch(FORMSPREE_ENDPOINT, {
+        method: "POST",
+        body: formData,
+        headers: { "Accept": "application/json" }
+      })
+        .then(resp => {
+          if (resp.ok) {
+            addAssistantMessage("Perfeito, seus dados foram enviados ao Eng. Leandro. Você receberá retorno em breve no e‑mail ou WhatsApp informados.");
+            showStatus("Dados enviados com sucesso.");
+          } else {
+            throw new Error("Erro no envio");
+          }
+        })
+        .catch(() => {
+          addAssistantMessage("Não consegui enviar automaticamente agora. Por favor, use o formulário de contato ou envie uma mensagem direta para o e‑mail/WhatsApp informados no site.");
           showStatus("Falha no envio automático.");
-        }
-      } catch (err) {
-        console.error(err);
-        addAssistantMessage("Ocorreu um erro de conexão ao enviar seus dados. Tente novamente mais tarde ou utilize o contato direto do site.");
-        showStatus("Falha no envio automático.");
-      }
+        });
     }
 
     function startConversation() {
@@ -1687,5 +1591,6 @@
     }
   });
 </script>
+
 </body>
 </html>
