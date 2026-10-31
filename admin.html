@@ -358,7 +358,6 @@
 </head>
 <body>
 <header>
-  <div class="brand-text-sub">Uso interno • Dados salvos na nuvem (Firebase)</div>
   <div class="container header-inner">
     <div class="brand">
       <div class="brand-icon">L</div>
@@ -1032,247 +1031,42 @@
       const fd = new FormData(e.target);
       const av = {
         id: Date.now(),
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
-  import {
-    getFirestore,
-    collection,
-    addDoc,
-    getDocs,
-    query,
-    orderBy
-  } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+        data: fd.get("data") || "",
+        cliente: fd.get("cliente") || "",
+        descricao: fd.get("descricao") || "",
+        valor: parseFloat(fd.get("valor") || "0"),
+        status: fd.get("status") || "Enviado",
+        obs: fd.get("obs") || ""
+      };
+      state.avaliacoes.push(av);
+      salvarEstado();
+      renderizarAvaliacoes();
+      e.target.reset();
+    });
 
-  // MESMO firebaseConfig do login.html
-  const firebaseConfig = {
-    apiKey: "AIzaSyBDUacZA7KSmeSkqQdB9YyUomK2_hX7lUQ",
-    authDomain: "laudos-leandro.firebaseapp.com",
-    projectId: "laudos-leandro",
-    storageBucket: "laudos-leandro.firebasestorage.app",
-    messagingSenderId: "561026492419",
-    appId: "1:561026492419:web:7242bfb9933f5212c1c636"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db  = getFirestore(app);
-
-  // Estado em memória
-  let state = {
-    gastos: [],
-    ganhos: [],
-    agendamentos: [],
-    avaliacoes: [],
-    notas: []
-  };
-
-  // ==== UTILIDADES ====
-  function formatarMoeda(valor) {
-    const num = Number(valor) || 0;
-    return num.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-  }
-
-  function atualizarResumo() {
-    // ganhos considerados: Aprovado + Concluído
-    const ganhosValidos = state.ganhos.filter(
-      g => g.status === "Aprovado" || g.status === "Concluído"
-    );
-    const totalGanhos = ganhosValidos.reduce((s, g) => s + (Number(g.valor) || 0), 0);
-    const totalGastos = state.gastos.reduce((s, g) => s + (Number(g.valor) || 0), 0);
-    const resultado   = totalGanhos - totalGastos;
-
-    document.getElementById("resumo-ganhos").textContent    = formatarMoeda(totalGanhos);
-    document.getElementById("resumo-gastos").textContent    = formatarMoeda(totalGastos);
-    document.getElementById("resumo-resultado").textContent = formatarMoeda(resultado);
-
-    document.getElementById("gastos-total-label").textContent =
-      "Total: " + formatarMoeda(totalGastos);
-
-    document.getElementById("ganhos-total-label").textContent =
-      "Total (aprovados + concluídos): " + formatarMoeda(totalGanhos);
-  }
-
-  // ==== RENDERIZAÇÃO (mesmo padrão da Etapa 1) ====
-  function renderizarGastos() {
-    const tbody = document.getElementById("tabela-gastos");
-    tbody.innerHTML = "";
-    if (!state.gastos.length) {
-      const tr = document.createElement("tr");
-      const td = document.createElement("td");
-      td.colSpan = 4;
-      td.className = "small";
-      td.textContent = "Nenhum gasto lançado.";
-      tr.appendChild(td);
-      tbody.appendChild(tr);
-      return;
-    }
-    const gastosOrdenados = [...state.gastos].sort((a, b) =>
-      (b.data || "").localeCompare(a.data || "")
-    );
-    gastosOrdenados.forEach(g => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${g.data || ""}</td>
-        <td>${g.categoria || ""}</td>
-        <td>${g.descricao || ""}</td>
-        <td>${formatarMoeda(g.valor)}</td>
-      `;
-      tbody.appendChild(tr);
+    // Notas
+    document.getElementById("form-nota").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const hoje = new Date().toISOString().slice(0, 10);
+      const nota = {
+        id: Date.now(),
+        titulo: fd.get("titulo") || "",
+        data: fd.get("data") || hoje,
+        conteudo: fd.get("conteudo") || ""
+      };
+      state.notas.push(nota);
+      salvarEstado();
+      renderizarNotas();
+      e.target.reset();
     });
   }
 
-  function renderizarGanhos() {
-    const tbody = document.getElementById("tabela-ganhos");
-    tbody.innerHTML = "";
-    if (!state.ganhos.length) {
-      const tr = document.createElement("tr");
-      const td = document.createElement("td");
-      td.colSpan = 6;
-      td.className = "small";
-      td.textContent = "Nenhum serviço lançado.";
-      tr.appendChild(td);
-      tbody.appendChild(tr);
-      return;
-    }
-    const ganhosOrdenados = [...state.ganhos].sort((a, b) =>
-      (b.data || "").localeCompare(a.data || "")
-    );
-    ganhosOrdenados.forEach(g => {
-      let classe = "tag-info";
-      if (g.status === "Aprovado" || g.status === "Concluído") classe = "tag-success";
-      if (g.status === "Orçado") classe = "tag-warning";
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${g.data || ""}</td>
-        <td>${g.cliente || ""}</td>
-        <td>${g.tipo || ""}</td>
-        <td>${formatarMoeda(g.valor)}</td>
-        <td><span class="tag ${classe}">${g.status}</span></td>
-        <td>${g.obs || ""}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-
-  function renderizarAgendamentos() {
-    const tbody = document.getElementById("tabela-agendamentos");
-    tbody.innerHTML = "";
-    if (!state.agendamentos.length) {
-      const tr = document.createElement("tr");
-      const td = document.createElement("td");
-      td.colSpan = 5;
-      td.className = "small";
-      td.textContent = "Nenhum agendamento cadastrado.";
-      tr.appendChild(td);
-      tbody.appendChild(tr);
-      return;
-    }
-    const ag = [...state.agendamentos].sort((a, b) => {
-      const dA = (a.data || "") + (a.hora || "");
-      const dB = (b.data || "") + (b.hora || "");
-      return dA.localeCompare(dB);
-    });
-    ag.forEach(a => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${a.data || ""}</td>
-        <td>${a.hora || ""}</td>
-        <td>${a.cliente || ""}</td>
-        <td>${a.tipo || ""}</td>
-        <td>${a.contato || ""}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-
-  function renderizarAvaliacoes() {
-    const tbody = document.getElementById("tabela-avaliacoes");
-    tbody.innerHTML = "";
-    if (!state.avaliacoes.length) {
-      const tr = document.createElement("tr");
-      const td = document.createElement("td");
-      td.colSpan = 6;
-      td.className = "small";
-      td.textContent = "Nenhuma proposta cadastrada.";
-      tr.appendChild(td);
-      tbody.appendChild(tr);
-      return;
-    }
-    const avals = [...state.avaliacoes].sort((a, b) =>
-      (b.data || "").localeCompare(a.data || "")
-    );
-    avals.forEach(a => {
-      let classe = "tag-info";
-      if (a.status === "Aprovado") classe = "tag-success";
-      if (a.status === "Negociando") classe = "tag-warning";
-      if (a.status === "Recusado") classe = "tag-danger";
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${a.data || ""}</td>
-        <td>${a.cliente || ""}</td>
-        <td>${a.descricao || ""}</td>
-        <td>${formatarMoeda(a.valor)}</td>
-        <td><span class="tag ${classe}">${a.status}</span></td>
-        <td>${a.obs || ""}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-
-  function renderizarNotas() {
-    const lista = document.getElementById("lista-notas");
-    lista.innerHTML = "";
-    if (!state.notas.length) {
-      const div = document.createElement("div");
-      div.className = "small";
-      div.textContent = "Nenhuma anotação ainda.";
-      lista.appendChild(div);
-      return;
-    }
-    const notasOrd = [...state.notas].sort((a, b) =>
-      (b.data || "").localeCompare(a.data || "")
-    );
-    notasOrd.forEach(n => {
-      const div = document.createElement("div");
-      div.className = "note-item";
-      div.innerHTML = `
-        <div class="note-title">${n.titulo || ""}</div>
-        <div class="note-date">${n.data || ""}</div>
-        <div>${(n.conteudo || "").replace(/\n/g, "<br>")}</div>
-      `;
-      lista.appendChild(div);
-    });
-  }
-
-  // ==== CARREGAR DADOS DO FIRESTORE ====
-  async function carregarColecao(nome) {
-    const ref = collection(db, nome);
-    // Ordena por "data" quando existir
-    try {
-      const q = query(ref, orderBy("data", "desc"));
-      const snap = await getDocs(q);
-      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    } catch (e) {
-      // se não tiver campo data em todos, tentar sem orderBy
-      const snap = await getDocs(ref);
-      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    }
-  }
-
-  async function carregarTudo() {
-    const [gastos, ganhos, agend, avals, notas] = await Promise.all([
-      carregarColecao("gastos"),
-      carregarColecao("ganhos"),
-      carregarColecao("agendamentos"),
-      carregarColecao("avaliacoes"),
-      carregarColecao("notas")
-    ]);
-    state.gastos        = gastos;
-    state.ganhos        = ganhos;
-    state.agendamentos  = agend;
-    state.avaliacoes    = avals;
-    state.notas         = notas;
+  // ========= INICIALIZAÇÃO =========
+  document.addEventListener("DOMContentLoaded", () => {
+    carregarEstado();
+    configurarAbas();
+    configurarFormularios();
 
     renderizarGastos();
     renderizarGanhos();
@@ -1280,154 +1074,6 @@
     renderizarAvaliacoes();
     renderizarNotas();
     atualizarResumo();
-  }
-
-  // ==== ABAS ====
-  function configurarAbas() {
-    const navButtons = document.querySelectorAll("nav button");
-    navButtons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        navButtons.forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        const section = btn.dataset.section;
-        document.querySelectorAll(".section").forEach(sec => sec.classList.remove("active"));
-        const alvo = document.getElementById("sec-" + section);
-        if (alvo) alvo.classList.add("active");
-      });
-    });
-  }
-
-  // ==== FORMULÁRIOS (salvando no Firestore) ====
-  function configurarFormularios(user) {
-    const uid = user ? user.uid : null;
-
-    // Gasto
-    document.getElementById("form-gasto").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const fd = new FormData(e.target);
-      const docData = {
-        data: fd.get("data") || "",
-        categoria: fd.get("categoria") || "",
-        descricao: fd.get("descricao") || "",
-        valor: parseFloat(fd.get("valor") || "0"),
-        uid,
-        criadoEm: new Date().toISOString()
-      };
-      const ref = await addDoc(collection(db, "gastos"), docData);
-      state.gastos.push({ id: ref.id, ...docData });
-      renderizarGastos();
-      atualizarResumo();
-      e.target.reset();
-    });
-
-    // Ganho
-    document.getElementById("form-ganho").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const fd = new FormData(e.target);
-      const docData = {
-        data: fd.get("data") || "",
-        cliente: fd.get("cliente") || "",
-        tipo: fd.get("tipo") || "",
-        valor: parseFloat(fd.get("valor") || "0"),
-        status: fd.get("status") || "Orçado",
-        obs: fd.get("obs") || "",
-        uid,
-        criadoEm: new Date().toISOString()
-      };
-      const ref = await addDoc(collection(db, "ganhos"), docData);
-      state.ganhos.push({ id: ref.id, ...docData });
-      renderizarGanhos();
-      atualizarResumo();
-      e.target.reset();
-    });
-
-    // Agendamento
-    document.getElementById("form-agendamento").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const fd = new FormData(e.target);
-      const docData = {
-        data: fd.get("data") || "",
-        hora: fd.get("hora") || "",
-        cliente: fd.get("cliente") || "",
-        tipo: fd.get("tipo") || "",
-        contato: fd.get("contato") || "",
-        origem: "painel",
-        uid,
-        criadoEm: new Date().toISOString()
-      };
-      const ref = await addDoc(collection(db, "agendamentos"), docData);
-      state.agendamentos.push({ id: ref.id, ...docData });
-      renderizarAgendamentos();
-      e.target.reset();
-    });
-
-    // Avaliação
-    document.getElementById("form-avaliacao").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const fd = new FormData(e.target);
-      const docData = {
-        data: fd.get("data") || "",
-        cliente: fd.get("cliente") || "",
-        descricao: fd.get("descricao") || "",
-        valor: parseFloat(fd.get("valor") || "0"),
-        status: fd.get("status") || "Enviado",
-        obs: fd.get("obs") || "",
-        uid,
-        criadoEm: new Date().toISOString()
-      };
-      const ref = await addDoc(collection(db, "avaliacoes"), docData);
-      state.avaliacoes.push({ id: ref.id, ...docData });
-      renderizarAvaliacoes();
-      e.target.reset();
-    });
-
-    // Notas
-    document.getElementById("form-nota").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const fd = new FormData(e.target);
-      const hoje = new Date().toISOString().slice(0, 10);
-      const docData = {
-        titulo: fd.get("titulo") || "",
-        data: fd.get("data") || hoje,
-        conteudo: fd.get("conteudo") || "",
-        uid,
-        criadoEm: new Date().toISOString()
-      };
-      const ref = await addDoc(collection(db, "notas"), docData);
-      state.notas.push({ id: ref.id, ...docData });
-      renderizarNotas();
-      e.target.reset();
-    });
-  }
-
-  // ==== INICIALIZAÇÃO / AUTENTICAÇÃO ====
-  document.addEventListener("DOMContentLoaded", () => {
-    configurarAbas();
-
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        // se não estiver logado, manda para login
-        window.location.href = "login.html";
-        return;
-      }
-
-      // opcional: mostrar e-mail em algum lugar se quiser
-      console.log("Logado como:", user.email);
-
-      await carregarTudo();
-      configurarFormularios(user);
-    });
-  });
-
-  // Se quiser adicionar um botão "Sair" no header com id="btnLogout":
-  // <button id="btnLogout" class="btn-outline">Sair</button>
-  // então:
-  document.addEventListener("click", (e) => {
-    if (e.target && e.target.id === "btnLogout") {
-      signOut(auth).then(() => {
-        window.location.href = "login.html";
-      });
-    }
   });
 </script>
 </body>
